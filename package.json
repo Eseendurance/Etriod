@@ -1,0 +1,33 @@
+{
+  "name": "etriod-server",
+  "version": "1.1.0",
+  "description": "ETriod full-stack backend: auth, conversations, AI, billing, admin.",
+  "main": "server/index.js",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "db:migrate": "node scripts/migrate.js",
+    "db:migrate:status": "node scripts/migrate.js --status",
+    "test": "node smoke-test.js && node migrate-test.js && node error-tracking-test.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "express-rate-limit": "^7.4.1",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "nodemailer": "^10.0.13",
+    "pg": "^8.13.1",
+    "stripe": "^17.4.0"
+  },
+  "devDependencies": {
+    "pg-mem": "^3.0.4"
+  }
+}

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ETriod — Pricing</title>
+<style>
+  :root{ --bg:#fff; --ink:#0a0a0a; --warm:#0a0a0a; --warm-soft:#f3f3f1; --line:#e8e6e2; --muted:#6c6c68; }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:var(--bg); color:var(--ink); font-family:'Inter',sans-serif;}
+  h1,h2,h3,.brand{font-family:'Space Grotesk',sans-serif;}
+  a{text-decoration:none; color:inherit;}
+  .wrap{max-width:1000px; margin:0 auto; padding:0 24px;}
+  nav{display:flex; justify-content:space-between; align-items:center; padding:22px 0;}
+  .brand{font-size:19px; font-weight:700;}
+  .nav-link{font-size:14px; color:var(--muted);}
+
+  .head{text-align:center; padding:50px 0 44px; opacity:0; animation:up .5s ease forwards;}
+  .head h1{font-size:38px; letter-spacing:-0.02em; margin-bottom:12px;}
+  .head p{color:var(--muted); font-size:16px;}
+  @keyframes up{from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);}}
+
+  .plans{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-bottom:60px;}
+  .plan{border:1.5px solid var(--line); border-radius:18px; padding:28px 24px; opacity:0; animation:up .5s ease forwards;}
+  .plan:nth-child(1){animation-delay:.05s} .plan:nth-child(2){animation-delay:.1s} .plan:nth-child(3){animation-delay:.15s}
+  .plan.featured{border-color:var(--warm); background:var(--warm-soft); position:relative;}
+  .plan-tag{position:absolute; top:-11px; right:22px; background:var(--warm); color:#fff; font-size:11.5px; font-weight:600; padding:4px 10px; border-radius:20px;}
+  .plan h3{font-size:16px; margin-bottom:6px;}
+  .plan-price{font-size:32px; font-weight:600; font-family:'Space Grotesk'; margin-bottom:4px;}
+  .plan-price span{font-size:14px; color:var(--muted); font-weight:400; font-family:'Inter';}
+  .plan-desc{font-size:13.5px; color:var(--muted); margin-bottom:20px;}
+  .plan ul{list-style:none; margin-bottom:22px;}
+  .plan li{font-size:13.5px; padding:7px 0; border-top:1px solid rgba(0,0,0,.06); display:flex; gap:8px;}
+  .plan li:first-child{border-top:none;}
+  .check{color:var(--warm); font-weight:700;}
+  .plan-btn{display:block; text-align:center; padding:11px; border-radius:9px; font-size:14px; font-weight:600; cursor:pointer; border:1.5px solid var(--ink); background:#fff;}
+  .plan.featured .plan-btn{background:var(--warm); color:#fff; border-color:var(--warm);}
+  .plan-btn:hover{opacity:.9;}
+
+  .signup{max-width:420px; margin:0 auto 80px; border:1.5px solid var(--line); border-radius:18px; padding:30px; opacity:0; animation:up .5s ease .2s forwards;}
+  .signup h2{font-size:19px; margin-bottom:6px;}
+  .signup p{font-size:13.5px; color:var(--muted); margin-bottom:20px;}
+  .field-row{margin-bottom:14px;}
+  label{font-size:12.5px; color:var(--muted); display:block; margin-bottom:6px;}
+  input, select{width:100%; padding:10px 12px; border:1.5px solid var(--line); border-radius:9px; font-family:'Inter'; font-size:14px; background:#fff;}
+  input:focus, select:focus{outline:none; border-color:var(--warm);}
+  .submit-btn{width:100%; padding:12px; background:var(--warm); color:#fff; border:none; border-radius:9px; font-weight:600; font-size:14.5px; cursor:pointer; margin-top:4px;}
+  .submit-btn:hover{opacity:.92;}
+  .submit-btn:disabled{opacity:.55; cursor:default;}
+  .status{font-size:13px; margin-top:12px; display:none;}
+  .status.ok{color:#111;}
+  .status.err{color:#555;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <span class="brand">ETriod</span>
+    <a class="nav-link" href="login.html">Open ETriod →</a>
+  </nav>
+</div>
+
+<div class="wrap">
+  <div class="head">
+    <h1>Simple pricing, your own AI.</h1>
+    <p>Start free. Upgrade only if your team needs more.</p>
+  </div>
+
+  <div class="plans">
+    <div class="plan">
+      <h3>Personal</h3>
+      <div class="plan-price">Free</div>
+      <div class="plan-desc">For everyday use, on your own.</div>
+      <ul>
+        <li><span class="check">✓</span> Unlimited conversations</li>
+        <li><span class="check">✓</span> Private account conversation history</li>
+        <li><span class="check">✓</span> Works on any device</li>
+      </ul>
+      <a class="plan-btn" href="login.html">Start free</a>
+    </div>
+    <div class="plan featured">
+      <span class="plan-tag">Most popular</span>
+      <h3>Team</h3>
+      <div class="plan-price" id="teamPrice">Team plan</div>
+      <div class="plan-desc">A paid subscription for small teams.</div>
+      <ul>
+        <li><span class="check">✓</span> Everything in Personal</li>
+        <li><span class="check">✓</span> Admin usage dashboard</li>
+        <li><span class="check">✓</span> Synced preferences</li>
+        <li><span class="check">✓</span> Priority support</li>
+      </ul>
+      <label for="gateway" style="margin:16px 0 6px">Payment method</label>
+      <select id="gateway" aria-label="Choose payment provider"><option>Loading available methods…</option></select>
+      <button class="plan-btn" id="checkoutBtn" type="button" style="width:100%;margin-top:10px">Subscribe securely</button>
+      <div class="status" id="billingStatus" role="status"></div>
+    </div>
+    <div class="plan">
+      <h3>Enterprise</h3>
+      <div class="plan-price">Custom</div>
+      <div class="plan-desc">For larger organizations with specific needs.</div>
+      <ul>
+        <li><span class="check">✓</span> Everything in Team</li>
+        <li><span class="check">✓</span> Data residency options</li>
+        <li><span class="check">✓</span> Dedicated onboarding</li>
+      </ul>
+      <a class="plan-btn" href="#signup">Talk to us</a>
+    </div>
+  </div>
+
+  <div class="signup" id="signup">
+    <h2>Get early access</h2>
+    <p>Join the waitlist for Team and Enterprise plans — we'll reach out when a spot opens.</p>
+    <form id="signupForm">
+      <div class="field-row"><label>Name</label><input type="text" id="fName" required></div>
+      <div class="field-row"><label>Email</label><input type="email" id="fEmail" required></div>
+      <div class="field-row">
+        <label>Plan interested in</label>
+        <select id="fPlan"><option>Team</option><option>Enterprise</option></select>
+      </div>
+      <button class="submit-btn" type="submit" id="submitBtn">Join waitlist</button>
+      <div class="status" id="status"></div>
+    </form>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script>
+document.getElementById('signupForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const btn = document.getElementById('submitBtn');
+  const status = document.getElementById('status');
+  const name = document.getElementById('fName').value.trim();
+  const email = document.getElementById('fEmail').value.trim();
+  const plan = document.getElementById('fPlan').value;
+  if(!name || !email) return;
+  btn.disabled = true; btn.textContent = 'Joining…';
+  try{
+    const res = await fetch(window.ETRIOD_API + '/api/waitlist', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ name, email, plan })
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || 'Something went wrong.');
+    status.className = 'status ok'; status.style.display='block';
+    status.textContent = "You're on the list — we'll email " + email + " when a spot opens.";
+    document.getElementById('signupForm').reset();
+    btn.textContent = 'Joined ✓';
+  }catch(err){
+    status.className = 'status err'; status.style.display='block';
+    status.textContent = err.message || 'Something went wrong — please try again.';
+    btn.disabled = false; btn.textContent = 'Join waitlist';
+  }
+});
+
+const gateway = document.getElementById('gateway');
+const billingStatus = document.getElementById('billingStatus');
+const billingButton = document.getElementById('checkoutBtn');
+let billingProviders = [];
+function showBillingStatus(message, ok=false) {
+  billingStatus.className = 'status ' + (ok ? 'ok' : 'err');
+  billingStatus.style.display = 'block';
+  billingStatus.textContent = message;
+}
+function renderTeamPrice() {
+  const selected = billingProviders.find(provider => provider.id === gateway.value);
+  if (!selected) return;
+  const amount = Number(selected.amount);
+  document.getElementById('teamPrice').textContent = Number.isFinite(amount) && amount > 0
+    ? new Intl.NumberFormat(undefined, { style: 'currency', currency: selected.currency }).format(amount) + '/mo'
+    : 'Price shown at checkout';
+}
+async function loadBillingOptions() {
+  try {
+    const response = await fetch(window.ETRIOD_API + '/api/billing/config');
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Could not load payment methods.');
+    billingProviders = data.providers || [];
+    gateway.replaceChildren();
+    if (!billingProviders.length) {
+      gateway.add(new Option('No payment provider configured', ''));
+      billingButton.disabled = true;
+      showBillingStatus('Online checkout is not configured yet. Please contact the team.');
+      return;
+    }
+    billingProviders.forEach(provider => gateway.add(new Option(provider.name, provider.id)));
+    renderTeamPrice();
+  } catch (error) {
+    gateway.replaceChildren(new Option('Payment options unavailable', ''));
+    billingButton.disabled = true;
+    showBillingStatus(error.message);
+  }
+}
+gateway.addEventListener('change', renderTeamPrice);
+billingButton.addEventListener('click', async () => {
+  const token = localStorage.getItem('etriod_token');
+  if (!token) {
+    showBillingStatus('Please sign in before starting a subscription.');
+    return;
+  }
+  billingButton.disabled = true;
+  billingButton.textContent = 'Connecting securely…';
+  try {
+    const response = await fetch(window.ETRIOD_API + '/api/billing/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+      body: JSON.stringify({ provider: gateway.value })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Could not start checkout.');
+    if (!data.url || !/^https:\/\//i.test(data.url)) throw new Error('The payment provider returned an invalid checkout URL.');
+    window.location.assign(data.url);
+  } catch (error) {
+    showBillingStatus(error.message);
+    billingButton.disabled = false;
+    billingButton.textContent = 'Subscribe securely';
+  }
+});
+if (new URLSearchParams(location.search).has('billing')) {
+  showBillingStatus('Payment was submitted. Your plan will update after the verified payment notification arrives.', true);
+}
+loadBillingOptions();
+</script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ETriod — Help</title>
+<style>
+  :root{ --bg:#fff; --ink:#0a0a0a; --warm:#111111; --warm-soft:#f3f3f1; --line:#e8e6e2; --muted:#6c6c68; }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:#fff; color:var(--ink); font-family:'Inter',sans-serif;}
+  h1,h2,.brand{font-family:'Space Grotesk',sans-serif;}
+  a{text-decoration:none; color:inherit;}
+  .wrap{max-width:680px; margin:0 auto; padding:0 24px;}
+  nav{display:flex; justify-content:space-between; align-items:center; padding:22px 0;}
+  .brand{font-size:19px; font-weight:700;}
+  .nav-link{font-size:14px; color:var(--muted);}
+
+  .head{padding:20px 0 36px; opacity:0; animation:up .5s ease forwards;}
+  .head h1{font-size:32px; letter-spacing:-0.02em; margin-bottom:8px;}
+  .head p{color:var(--muted); font-size:15px;}
+  @keyframes up{from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);}}
+
+  .search{width:100%; padding:12px 16px; border:1.5px solid var(--line); border-radius:11px; font-family:'Inter'; font-size:14.5px; margin-bottom:32px;}
+  .search:focus{outline:none; border-color:var(--warm);}
+
+  .item{border-bottom:1px solid var(--line); opacity:0; animation:up .45s ease forwards;}
+  .item-q{display:flex; justify-content:space-between; align-items:center; padding:18px 2px; cursor:pointer; font-size:15px; font-weight:500;}
+  .item-q .chev{color:var(--warm); font-size:13px; transition:transform .2s;}
+  .item.open .chev{transform:rotate(180deg);}
+  .item-a{max-height:0; overflow:hidden; transition:max-height .25s ease;}
+  .item-a p{font-size:14px; color:var(--muted); line-height:1.55; padding:0 2px 18px;}
+  .item.open .item-a{max-height:220px;}
+  .item.hidden{display:none;}
+
+  footer{padding:44px 0; color:var(--muted); font-size:13px; text-align:center;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <span class="brand">ETriod</span>
+    <a class="nav-link" href="login.html">Open ETriod →</a>
+  </nav>
+
+  <div class="head">
+    <h1>Help & questions</h1>
+    <p>Everything you might want to know about ETriod.</p>
+  </div>
+
+  <input class="search" id="search" placeholder="Search a question…">
+  <div id="list"></div>
+</div>
+
+<footer>Still stuck? Just ask ETriod directly — it can explain itself.</footer>
+
+<script>
+const FAQ = [
+  { q:'What is ETriod?', a:'ETriod is your own AI assistant — a private chat app you can use for writing, planning, research, and everyday questions, saved and ready whenever you come back.' },
+  { q:'Is my conversation history private?', a:'Yes. The actual text of your conversations is stored only on your own device, in your browser. It is never sent to shared storage — only anonymous usage counts (like how many messages you sent) are used for the admin dashboard.' },
+  { q:'Do I need an account to use it?', a:'No account walls — open ETriod and start typing. Your profile picture and name, if available, are used automatically to personalize things like Settings.' },
+  { q:'What happens if I clear my browser data?', a:'Your conversation history lives in that browser, so clearing site data or switching devices will start you with a fresh history. Preferences saved in Settings will still follow your account.' },
+  { q:'How is ETriod different from other AI chat tools?', a:'It is built as your own branded assistant rather than a generic tool — same underlying model quality, but designed around your workflow, with templates, settings, and usage insight built in.' },
+  { q:'Can my team see what I talk about?', a:'No. Team plans give admins aggregate usage numbers (conversation counts, active users) — never the content of individual conversations.' },
+  { q:'Is there a free plan?', a:'Yes — the Personal plan is free with unlimited conversations. Team and Enterprise plans add shared usage insight and are currently in early access.' },
+  { q:'What if ETriod gives a wrong answer?', a:'Like any AI assistant, it can make mistakes — especially on very recent events or highly specific facts. Treat answers as a strong first draft and double-check anything important.' },
+];
+
+const listEl = document.getElementById('list');
+FAQ.forEach((item, i)=>{
+  const div = document.createElement('div');
+  div.className = 'item';
+  div.style.animationDelay = (0.03*i) + 's';
+  div.dataset.q = item.q.toLowerCase();
+  div.dataset.a = item.a.toLowerCase();
+  div.innerHTML = '<div class="item-q"><span>'+item.q+'</span><span class="chev">⌄</span></div><div class="item-a"><p>'+item.a+'</p></div>';
+  div.querySelector('.item-q').addEventListener('click', ()=> div.classList.toggle('open'));
+  listEl.appendChild(div);
+});
+
+document.getElementById('search').addEventListener('input', (e)=>{
+  const term = e.target.value.toLowerCase().trim();
+  document.querySelectorAll('.item').forEach(div=>{
+    const match = !term || div.dataset.q.includes(term) || div.dataset.a.includes(term);
+    div.classList.toggle('hidden', !match);
+  });
+});
+</script>
+</body>
+</html>

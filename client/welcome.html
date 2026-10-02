@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ETriod — Welcome</title>
+<style>
+  :root{ --ink:#0a0a0a; --warm:#111111; --warm-soft:#f3f3f1; --line:#e8e6e2; --muted:#6c6c68; }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:#fff; color:var(--ink); font-family:'Inter',sans-serif; height:100vh; display:flex; flex-direction:column;}
+  h1,.brand{font-family:'Space Grotesk',sans-serif;}
+  .top{display:flex; justify-content:space-between; align-items:center; padding:22px 28px;}
+  .brand{font-size:18px; font-weight:700;}
+  .progress{display:flex; gap:6px;}
+  .dot{width:22px; height:4px; border-radius:4px; background:var(--line);}
+  .dot.done{background:var(--warm);}
+  .stage{flex:1; display:flex; align-items:center; justify-content:center; padding:20px;}
+  .panel{max-width:440px; width:100%; text-align:center;}
+  .step{display:none;}
+  .step.active{display:block; animation:up .45s ease;}
+  @keyframes up{from{opacity:0; transform:translateY(12px);} to{opacity:1; transform:translateY(0);}}
+  .badge{width:56px; height:56px; border-radius:16px; background:var(--warm-soft); color:var(--warm); font-family:'Space Grotesk'; font-weight:700; font-size:22px; display:flex; align-items:center; justify-content:center; margin:0 auto 20px;}
+  .step h1{font-size:26px; letter-spacing:-0.02em; margin-bottom:10px;}
+  .step p{font-size:14.5px; color:var(--muted); margin-bottom:26px; line-height:1.55;}
+  .options{display:flex; flex-direction:column; gap:10px; margin-bottom:22px; text-align:left;}
+  .opt{border:1.5px solid var(--line); border-radius:11px; padding:13px 16px; font-size:14.5px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;}
+  .opt:hover{border-color:var(--warm);}
+  .opt.selected{border-color:var(--warm); background:var(--warm-soft); font-weight:600;}
+  .opt .mark{width:16px; height:16px; border-radius:50%; border:1.5px solid var(--line);}
+  .opt.selected .mark{background:var(--warm); border-color:var(--warm);}
+  .btn-primary{background:var(--warm); color:#fff; padding:13px 26px; border-radius:10px; font-weight:600; font-size:15px; border:none; cursor:pointer; width:100%; text-decoration:none; display:block;}
+  .skip{display:block; margin-top:14px; font-size:13px; color:var(--muted);}
+</style>
+</head>
+<body>
+<div class="top">
+  <span class="brand">ETriod</span>
+  <div class="progress"><div class="dot done" id="d1"></div><div class="dot" id="d2"></div></div>
+</div>
+<div class="stage"><div class="panel">
+  <div class="step active" id="step1">
+    <div class="badge">↝</div>
+    <h1 id="greeting">Welcome to ETriod.</h1>
+    <p>What will you mostly use it for? This just helps us show you useful templates first — you can always ask for anything.</p>
+    <div class="options" id="useOptions">
+      <div class="opt" data-v="writing"><span>Writing & messages</span><span class="mark"></span></div>
+      <div class="opt" data-v="planning"><span>Planning & organizing</span><span class="mark"></span></div>
+      <div class="opt" data-v="research"><span>Research & learning</span><span class="mark"></span></div>
+      <div class="opt" data-v="business"><span>Business & work</span><span class="mark"></span></div>
+    </div>
+    <button class="btn-primary" id="next1">Continue</button>
+  </div>
+  <div class="step" id="step2">
+    <div class="badge">✓</div>
+    <h1>You're all set.</h1>
+    <p id="finalMsg">ETriod is ready — open it and say what's on your mind.</p>
+    <a class="btn-primary" href="app.html">Open ETriod</a>
+    <a class="skip" href="templates.html">Or browse templates first →</a>
+  </div>
+</div></div>
+
+<script src="config.js"></script>
+<script>
+const token = localStorage.getItem('etriod_token');
+if(!token){ window.location.href = 'login.html'; }
+const headers = { 'Content-Type':'application/json', 'Authorization':'Bearer '+token };
+
+let selectedUse = null;
+try{
+  const stored = JSON.parse(localStorage.getItem('etriod_user') || '{}');
+  if(stored.name) document.getElementById('greeting').textContent = 'Good to meet you, ' + stored.name.split(' ')[0] + '.';
+}catch(e){}
+
+document.querySelectorAll('.opt').forEach(opt=>{
+  opt.addEventListener('click', ()=>{
+    document.querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));
+    opt.classList.add('selected');
+    selectedUse = opt.dataset.v;
+  });
+});
+
+document.getElementById('next1').addEventListener('click', async ()=>{
+  try{
+    await fetch(window.ETRIOD_API + '/api/settings', {
+      method:'PUT', headers,
+      body: JSON.stringify({ onboarded: true, primaryUse: selectedUse || 'general' })
+    });
+  }catch(e){ /* non-fatal — they still reach the app either way */ }
+
+  const labelMap = { writing:'writing and messages', planning:'planning and organizing', research:'research and learning', business:'business and work' };
+  if(selectedUse){
+    document.getElementById('finalMsg').textContent = "ETriod is ready — since you're mostly here for " + labelMap[selectedUse] + ", try the templates gallery for a quick start.";
+  }
+  document.getElementById('step1').classList.remove('active');
+  document.getElementById('step2').classList.add('active');
+  document.getElementById('d2').classList.add('done');
+});
+</script>
+</body>
+</html>

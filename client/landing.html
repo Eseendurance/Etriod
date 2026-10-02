@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ETriod — Your own AI</title>
+<style>
+  :root{
+    --bg:#ffffff; --ink:#0a0a0a; --warm:#111111; --warm-soft:#f3f3f1;
+    --line:#e8e6e2; --muted:#6c6c68;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:var(--bg); color:var(--ink); font-family:'Inter',sans-serif; line-height:1.5;}
+  h1,h2,h3,.brand{font-family:'Space Grotesk',sans-serif;}
+  a{text-decoration:none; color:inherit;}
+  .wrap{max-width:1080px; margin:0 auto; padding:0 24px;}
+
+  /* Nav */
+  nav{display:flex; align-items:center; justify-content:space-between; padding:22px 0;}
+  .brand{font-size:19px; font-weight:700; letter-spacing:-0.02em;}
+  .nav-cta{background:var(--ink); color:#fff; padding:9px 18px; border-radius:8px; font-size:14px; font-weight:600;}
+  .nav-cta:hover{background:var(--warm);}
+
+  /* Hero */
+  .hero{padding:70px 0 60px; text-align:left;}
+  .hero-grid{display:grid; grid-template-columns:1.1fr .9fr; gap:48px; align-items:center;}
+  .kicker{color:var(--warm); font-weight:600; font-size:14px; margin-bottom:14px; opacity:0; animation:fadeUp .6s ease forwards;}
+  .hero h1{font-size:52px; line-height:1.08; letter-spacing:-0.02em; margin-bottom:18px; opacity:0; animation:fadeUp .6s ease .1s forwards;}
+  .hero p{font-size:17px; color:var(--muted); max-width:440px; margin-bottom:28px; opacity:0; animation:fadeUp .6s ease .2s forwards;}
+  .hero-ctas{display:flex; gap:12px; opacity:0; animation:fadeUp .6s ease .3s forwards;}
+  .btn-primary{background:var(--warm); color:#fff; padding:13px 24px; border-radius:10px; font-weight:600; font-size:15px; display:inline-block;}
+  .btn-primary:hover{opacity:.92;}
+  .btn-ghost{border:1.5px solid var(--line); padding:12px 22px; border-radius:10px; font-weight:600; font-size:15px;}
+  .btn-ghost:hover{border-color:var(--ink);}
+  @keyframes fadeUp{from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:translateY(0);}}
+
+  /* Hero visual: mock chat card */
+  .card{background:var(--ink); border-radius:20px; padding:22px; color:#fff; opacity:0; animation:fadeUp .7s ease .25s forwards;}
+  .card-line{display:flex; gap:10px; margin-bottom:14px; align-items:flex-start;}
+  .dot{width:8px; height:8px; border-radius:50%; background:var(--warm); margin-top:6px; flex-shrink:0;}
+  .card-bubble{background:#1a1a1a; border-radius:10px; padding:10px 13px; font-size:13.5px; color:#dcdcdc;}
+  .card-bubble.warm{background:var(--warm); color:#fff;}
+
+  /* Feature strip */
+  .features{padding:70px 0; border-top:1px solid var(--line);}
+  .features h2{font-size:30px; letter-spacing:-0.02em; margin-bottom:40px; max-width:520px;}
+  .feature-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:32px;}
+  .feature h3{font-size:17px; margin-bottom:8px;}
+  .feature p{font-size:14.5px; color:var(--muted);}
+  .feature-num{font-size:13px; color:var(--warm); font-weight:600; margin-bottom:12px;}
+
+  /* Strip */
+  .strip{background:var(--warm-soft); border-radius:20px; padding:44px; margin:70px 0; display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap;}
+  .strip h2{font-size:26px; letter-spacing:-0.02em; max-width:460px;}
+
+  footer{border-top:1px solid var(--line); padding:28px 0 40px; display:flex; justify-content:space-between; color:var(--muted); font-size:13px; flex-wrap:wrap; gap:10px;}
+
+  @media (max-width:760px){
+    .hero-grid{grid-template-columns:1fr;}
+    .hero h1{font-size:36px;}
+    .feature-grid{grid-template-columns:1fr; gap:28px;}
+    .strip{padding:32px 24px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <span class="brand">ETriod</span>
+    <a class="nav-cta" href="login.html">Open ETriod</a>
+  </nav>
+</div>
+
+<div class="wrap hero">
+  <div class="hero-grid">
+    <div>
+      <div class="kicker">Your own AI</div>
+      <h1>An AI that's actually yours.</h1>
+      <p>ETriod is a private, always-on assistant built around how you work — not a generic chatbot with your logo on it.</p>
+      <div class="hero-ctas">
+        <a class="btn-primary" href="login.html">Start using ETriod</a>
+        <a class="btn-ghost" href="#features">See what it does</a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-line"><div class="dot"></div><div class="card-bubble">Draft a follow-up to yesterday's client call</div></div>
+      <div class="card-line"><div class="dot"></div><div class="card-bubble warm">Done — three tones ready, pick one and I'll refine it</div></div>
+      <div class="card-line"><div class="dot"></div><div class="card-bubble">Now summarize the open action items</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap features" id="features">
+  <h2>Built to feel like one assistant, not a hundred tabs.</h2>
+  <div class="feature-grid">
+    <div class="feature">
+      <div class="feature-num">01</div>
+      <h3>Remembers the thread</h3>
+      <p>Every conversation is saved and easy to pick back up — nothing gets lost between sessions.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-num">02</div>
+      <h3>Fast, direct answers</h3>
+      <p>No filler, no forced small talk — ETriod gets to the point and gets out of your way.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-num">03</div>
+      <h3>Works on any device</h3>
+      <p>Same assistant, same history, whether you're on your phone or your laptop.</p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="strip">
+    <h2>Ready when you are — no setup, no account walls.</h2>
+    <a class="btn-primary" href="login.html">Open ETriod</a>
+  </div>
+</div>
+
+<div class="wrap">
+  <footer>
+    <span>ETriod</span>
+    <span>Your own AI, always on.</span>
+  </footer>
+</div>
+</body>
+</html>

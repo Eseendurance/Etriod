@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ETriod — Always on, always yours.</title>
+<style>
+  :root{ --bg:#fff; --ink:#0a0a0a; --warm:#111111; --warm-soft:#f3f3f1; --line:#e8e6e2; --muted:#6c6c68; }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:var(--bg); color:var(--ink); font-family:'Inter',sans-serif; line-height:1.55;}
+  h1,h2,h3,.brand{font-family:'Space Grotesk',sans-serif;}
+  a{text-decoration:none; color:inherit;}
+  .wrap{max-width:720px; margin:0 auto; padding:0 24px;}
+
+  nav{display:flex; justify-content:space-between; align-items:center; padding:22px 0; max-width:900px; margin:0 auto; padding-left:24px; padding-right:24px;}
+  .brand{font-size:19px; font-weight:700;}
+  .nav-link{font-size:14px; color:var(--muted);}
+
+  .hero{padding:64px 0 10px; text-align:center; opacity:0; animation:up .6s ease forwards;}
+  .hero .kicker{color:var(--warm); font-weight:600; font-size:13.5px; margin-bottom:16px;}
+  .hero h1{font-size:44px; line-height:1.12; letter-spacing:-0.02em; margin-bottom:20px;}
+  @keyframes up{from{opacity:0; transform:translateY(12px);} to{opacity:1; transform:translateY(0);}}
+
+  .stat-line{display:flex; justify-content:center; gap:44px; padding:36px 0 50px; opacity:0; animation:up .6s ease .1s forwards;}
+  .stat{text-align:center;}
+  .stat-num{font-size:30px; font-weight:600; font-family:'Space Grotesk'; color:var(--warm);}
+  .stat-label{font-size:12.5px; color:var(--muted); margin-top:4px;}
+
+  .story{padding:20px 0 50px; opacity:0; animation:up .6s ease .16s forwards;}
+  .story p{font-size:17px; color:#2c2c2a; margin-bottom:18px;}
+  .story p:last-child{margin-bottom:0;}
+  .story strong{color:var(--ink);}
+
+  .quote{background:var(--warm-soft); border-radius:18px; padding:34px; margin:50px 0; opacity:0; animation:up .6s ease .2s forwards;}
+  .quote p{font-size:19px; line-height:1.5; font-family:'Space Grotesk'; font-weight:500; margin-bottom:14px;}
+  .quote-by{font-size:13px; color:var(--muted);}
+
+  .cta-block{text-align:center; padding:20px 0 70px;}
+  .btn-primary{background:var(--warm); color:#fff; padding:14px 30px; border-radius:10px; font-weight:600; font-size:15.5px; display:inline-block;}
+  .btn-primary:hover{opacity:.92;}
+  .cta-sub{font-size:13px; color:var(--muted); margin-top:12px;}
+
+  footer{border-top:1px solid var(--line); padding:24px 0 40px; color:var(--muted); font-size:13px; text-align:center;}
+
+  @media (max-width:640px){ .hero h1{font-size:32px;} .stat-line{gap:24px;} .quote p{font-size:17px;} }
+</style>
+</head>
+<body>
+<nav>
+  <span class="brand">ETriod</span>
+  <a class="nav-link" href="login.html">Open ETriod →</a>
+</nav>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="kicker">Your own AI</div>
+    <h1>The assistant that remembers what you're actually trying to do.</h1>
+  </div>
+
+  <div class="stat-line">
+    <div class="stat"><div class="stat-num">1.4s</div><div class="stat-label">avg. response</div></div>
+    <div class="stat"><div class="stat-num">0</div><div class="stat-label">setup required</div></div>
+    <div class="stat"><div class="stat-num">24/7</div><div class="stat-label">always on</div></div>
+  </div>
+
+  <div class="story">
+    <p>Most AI tools reset the moment you close the tab. You explain the context again, re-paste the same background, and start from zero — every single time.</p>
+    <p><strong>ETriod doesn't do that.</strong> Every conversation is saved and easy to return to, so the second message picks up exactly where the first one left off — this week, or next month.</p>
+    <p>No dashboard tour. No settings to configure before it's useful. Open it, say what you need, and it gets to work.</p>
+  </div>
+
+  <div class="quote">
+    <p>"I stopped re-explaining myself to a chatbot. It just remembers what I was doing."</p>
+    <div class="quote-by">— an early ETriod user</div>
+  </div>
+
+  <div class="cta-block">
+    <a class="btn-primary" href="login.html">Start using ETriod</a>
+    <div class="cta-sub">Free to start. No account walls.</div>
+  </div>
+</div>
+
+<footer>ETriod — your own AI, always on.</footer>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ETriod — Templates</title>
+<style>
+  :root{ --bg:#fff; --ink:#0a0a0a; --warm:#111111; --warm-soft:#f3f3f1; --line:#e8e6e2; --muted:#6c6c68; }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:var(--bg); color:var(--ink); font-family:'Inter',sans-serif;}
+  h1,h2,h3,.brand{font-family:'Space Grotesk',sans-serif;}
+  a{text-decoration:none; color:inherit;}
+  .wrap{max-width:1040px; margin:0 auto; padding:0 24px;}
+  nav{display:flex; justify-content:space-between; align-items:center; padding:22px 0;}
+  .brand{font-size:19px; font-weight:700;}
+  .nav-link{font-size:14px; color:var(--muted);}
+
+  .head{padding:20px 0 38px; opacity:0; animation:up .5s ease forwards;}
+  .head h1{font-size:34px; letter-spacing:-0.02em; margin-bottom:10px;}
+  .head p{color:var(--muted); font-size:15.5px; max-width:480px;}
+  @keyframes up{from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);}}
+
+  .group{margin-bottom:40px;}
+  .group-title{font-size:13px; font-weight:600; color:var(--warm); margin-bottom:14px;}
+  .grid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
+  .tpl{border:1.5px solid var(--line); border-radius:14px; padding:18px; cursor:pointer; opacity:0; animation:up .45s ease forwards;}
+  .tpl:hover{border-color:var(--warm); background:var(--warm-soft);}
+  .tpl h3{font-size:14.5px; margin-bottom:6px;}
+  .tpl p{font-size:13px; color:var(--muted); line-height:1.4;}
+
+  footer{border-top:1px solid var(--line); padding:24px 0 40px; color:var(--muted); font-size:13px;}
+
+  @media (max-width:760px){ .grid{grid-template-columns:1fr;} .head h1{font-size:27px;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <span class="brand">ETriod</span>
+    <a class="nav-link" href="login.html">Open ETriod →</a>
+  </nav>
+
+  <div class="head">
+    <h1>Start from a template.</h1>
+    <p>Pick a starting point — it opens straight in ETriod with the prompt ready to send or edit.</p>
+  </div>
+
+  <div id="groups"></div>
+</div>
+
+<div class="wrap"><footer>ETriod — your own AI, always on.</footer></div>
+
+<script>
+const APP_URL = 'app.html';
+
+const GROUPS = [
+  { title: 'Writing', items: [
+    { t:'Follow-up email', d:'After a meeting or call, ready in your tone.', q:'Draft a short, professional follow-up email after a client meeting we just had.' },
+    { t:'Polish a message', d:'Tighten up something you already wrote.', q:'Help me polish this message so it sounds clear and professional: [paste your draft]' },
+    { t:'Social post', d:'A short post for LinkedIn or similar.', q:'Write a short LinkedIn post announcing a product update, in a confident but not salesy tone.' },
+  ]},
+  { title: 'Thinking & planning', items: [
+    { t:'Weekly plan', d:'Turn a messy list into a plan.', q:'Help me plan my week — here is everything on my plate: [list your tasks]' },
+    { t:'Decision helper', d:'Weigh two options side by side.', q:'Help me think through a decision by comparing the pros and cons of two options: [describe them]' },
+    { t:'Meeting agenda', d:'A tight agenda for a real meeting.', q:'Draft a 30-minute meeting agenda for a project kickoff with three stakeholders.' },
+  ]},
+  { title: 'Research & explaining', items: [
+    { t:'Explain simply', d:'Any topic, explained plainly.', q:'Explain this topic to me simply, like I have no background in it: [your topic]' },
+    { t:'Summarize a document', d:'Paste text, get the key points.', q:'Summarize the key points of this text in five bullet points: [paste your text]' },
+    { t:'Compare options', d:'Two products, tools, or approaches.', q:'Compare these two options and tell me the real tradeoffs: [option A] vs [option B]' },
+  ]},
+  { title: 'Business', items: [
+    { t:'Grow ideas', d:'Fresh angles for a real business.', q:'Give me three concrete ideas to grow my business — here is what we do: [describe your business]' },
+    { t:'Pricing sanity check', d:'Stress-test a pricing idea.', q:'I am thinking of pricing my product at [price] — help me sanity check this against how customers usually think about value.' },
+    { t:'Job post', d:'A clear, honest job description.', q:'Write a job description for a role I am hiring for: [role and key responsibilities]' },
+  ]},
+];
+
+const groupsEl = document.getElementById('groups');
+let delayIndex = 0;
+GROUPS.forEach(g=>{
+  const section = document.createElement('div');
+  section.className = 'group';
+  const title = document.createElement('div');
+  title.className = 'group-title';
+  title.textContent = g.title;
+  section.appendChild(title);
+
+  const grid = document.createElement('div');
+  grid.className = 'grid';
+  g.items.forEach(item=>{
+    const card = document.createElement('a');
+    card.className = 'tpl';
+    card.href = APP_URL + '?q=' + encodeURIComponent(item.q);
+    card.style.animationDelay = (0.03 * (delayIndex % 9)) + 's';
+    delayIndex++;
+    card.innerHTML = '<h3>'+item.t+'</h3><p>'+item.d+'</p>';
+    grid.appendChild(card);
+  });
+  section.appendChild(grid);
+  groupsEl.appendChild(section);
+});
+</script>
+</body>
+</html>

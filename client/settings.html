@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ETriod — Settings</title>
+<style>
+  :root{ --ink:#0a0a0a; --warm:#111111; --warm-soft:#f3f3f1; --line:#e8e6e2; --muted:#8a8a86; --danger:#555555; --danger-soft:#efefed; }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:#fbfaf8; color:var(--ink); font-family:'Inter',sans-serif;}
+  h1,h2,.brand{font-family:'Space Grotesk',sans-serif;}
+  a{color:inherit;}
+  .topnav{display:flex; align-items:center; justify-content:space-between; padding:18px 28px; border-bottom:1px solid var(--line); background:#fff;}
+  .brand{font-size:18px; font-weight:700;}
+  .back{font-size:13.5px; color:var(--muted); text-decoration:none;}
+  .wrap{max-width:640px; margin:0 auto; padding:40px 24px 80px;}
+  .page-head{margin-bottom:20px;}
+  .page-head h1{font-size:26px; letter-spacing:-0.02em; margin-bottom:6px;}
+  .page-head p{color:var(--muted); font-size:14.5px;}
+  .verify-banner{background:var(--warm-soft); border-radius:12px; padding:14px 16px; margin-bottom:18px; display:none; align-items:center; justify-content:space-between; gap:12px; font-size:13.5px;}
+  .verify-banner button{background:var(--warm); color:#fff; border:none; padding:8px 14px; border-radius:8px; font-size:12.5px; font-weight:600; cursor:pointer; flex-shrink:0;}
+  .card{background:#fff; border:1px solid var(--line); border-radius:16px; padding:24px; margin-bottom:18px;}
+  .card h2{font-size:15px; margin-bottom:4px;}
+  .card-sub{font-size:13px; color:var(--muted); margin-bottom:18px;}
+  .profile-row{display:flex; align-items:center; gap:14px;}
+  .avatar{width:52px; height:52px; border-radius:50%; background:var(--warm-soft); color:var(--warm); font-family:'Space Grotesk'; font-weight:700; font-size:19px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+  .profile-name{font-size:16px; font-weight:600;}
+  .profile-email{font-size:13.5px; color:var(--muted); margin-top:2px;}
+  .field{display:flex; justify-content:space-between; align-items:center; padding:13px 0; border-bottom:1px solid #f1efec;}
+  .field:last-child{border-bottom:none;}
+  .field-label{font-size:14px;}
+  .field-hint{font-size:12.5px; color:var(--muted); margin-top:2px;}
+  .switch{position:relative; width:42px; height:24px; flex-shrink:0;}
+  .switch input{opacity:0; width:0; height:0;}
+  .slider{position:absolute; inset:0; background:#e8e6e2; border-radius:24px; cursor:pointer; transition:background .2s;}
+  .slider:before{content:''; position:absolute; width:18px; height:18px; left:3px; top:3px; background:#fff; border-radius:50%; transition:transform .2s;}
+  input:checked + .slider{background:var(--warm);} input:checked + .slider:before{transform:translateX(18px);}
+  .btn{padding:10px 16px; border-radius:9px; font-size:13.5px; font-weight:600; cursor:pointer; border:1px solid var(--line); background:#fff;}
+  .btn-danger{border-color:var(--danger-soft); color:var(--danger); background:var(--danger-soft);}
+  .btn-danger:disabled{opacity:.5; cursor:default;}
+  .saved-tag{font-size:12px; color:var(--warm); opacity:0; transition:opacity .3s; margin-left:8px;}
+  .saved-tag.show{opacity:1;}
+  .notice{font-size:12.5px; color:var(--muted); background:#f6f5f2; border-radius:8px; padding:10px 12px; margin-top:2px;}
+</style>
+</head>
+<body>
+<div class="topnav">
+  <span class="brand">ETriod</span>
+  <a class="back" href="app.html">← Back to ETriod</a>
+</div>
+
+<div class="wrap">
+  <div class="page-head"><h1>Settings</h1><p>Your account, preferences, and data.</p></div>
+
+  <div class="verify-banner" id="verifyBanner">
+    <span>Your email isn't verified yet.</span>
+    <button id="resendBtn">Resend email</button>
+  </div>
+
+  <div class="card">
+    <h2>Profile</h2>
+    <div class="card-sub">How you appear across ETriod.</div>
+    <div class="profile-row">
+      <div class="avatar" id="avatarInitial">—</div>
+      <div><div class="profile-name" id="profileName">—</div><div class="profile-email" id="profileEmail"></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Preferences</h2>
+    <div class="card-sub">Saved to your account — applies everywhere you sign in.</div>
+    <div class="field">
+      <div><div class="field-label">Sound on new reply</div><div class="field-hint">Play a soft tone when ETriod finishes answering.</div></div>
+      <label class="switch"><input type="checkbox" id="soundToggle"><span class="slider"></span></label>
+    </div>
+    <div class="field">
+      <div><div class="field-label">Suggested prompts</div><div class="field-hint">Show quick-start suggestions on a new chat.</div></div>
+      <label class="switch"><input type="checkbox" id="suggestToggle" checked><span class="slider"></span></label>
+    </div>
+    <span class="saved-tag" id="savedTag">Saved</span>
+  </div>
+
+  <div class="card">
+    <h2>Your data</h2>
+    <div class="card-sub">All conversation history lives in your database, tied to your account.</div>
+    <div class="field">
+      <div><div class="field-label">Chat history</div><div class="field-hint">Permanently deletes every conversation on your account.</div></div>
+      <button class="btn btn-danger" id="clearBtn">Clear history</button>
+    </div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script>
+const token = localStorage.getItem('etriod_token');
+if(!token){ window.location.href = 'login.html'; }
+const headers = { 'Content-Type':'application/json', 'Authorization':'Bearer '+token };
+
+async function api(path, opts={}){
+  const res = await fetch(window.ETRIOD_API + path, { ...opts, headers, body: opts.body ? JSON.stringify(opts.body) : undefined });
+  if(res.status === 401){ localStorage.removeItem('etriod_token'); window.location.href = 'login.html'; return; }
+  const data = await res.json().catch(()=>({}));
+  if(!res.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+
+async function loadProfile(){
+  const data = await api('/api/auth/me');
+  const u = data.user;
+  document.getElementById('profileName').textContent = u.name;
+  document.getElementById('profileEmail').textContent = u.email;
+  document.getElementById('avatarInitial').textContent = (u.name || '?').charAt(0).toUpperCase();
+  document.getElementById('soundToggle').checked = !!u.soundPref;
+  document.getElementById('suggestToggle').checked = u.suggestionsPref !== false;
+  document.getElementById('verifyBanner').style.display = u.emailVerified ? 'none' : 'flex';
+  localStorage.setItem('etriod_user', JSON.stringify(u));
+}
+
+let saveTimer = null;
+async function savePrefs(){
+  try{
+    await api('/api/settings', { method:'PUT', body:{
+      soundPref: document.getElementById('soundToggle').checked,
+      suggestionsPref: document.getElementById('suggestToggle').checked
+    }});
+    const tag = document.getElementById('savedTag');
+    tag.classList.add('show');
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(()=> tag.classList.remove('show'), 1400);
+  }catch(e){ /* non-fatal */ }
+}
+document.getElementById('soundToggle').addEventListener('change', savePrefs);
+document.getElementById('suggestToggle').addEventListener('change', savePrefs);
+
+document.getElementById('resendBtn').addEventListener('click', async (e)=>{
+  const btn = e.target;
+  btn.disabled = true; btn.textContent = 'Sending…';
+  try{
+    const data = await api('/api/auth/resend-verification', { method:'POST' });
+    btn.textContent = data.message.includes('already') ? 'Already verified' : 'Sent ✓';
+  }catch(err){
+    btn.textContent = 'Try again';
+    btn.disabled = false;
+  }
+});
+
+document.getElementById('clearBtn').addEventListener('click', async ()=>{
+  if(!confirm('Permanently delete all your ETriod chat history? This cannot be undone.')) return;
+  const btn = document.getElementById('clearBtn');
+  btn.disabled = true; btn.textContent = 'Clearing…';
+  try{
+    await api('/api/settings/history', { method:'DELETE' });
+    btn.textContent = 'Cleared ✓';
+  }catch(e){
+    btn.textContent = 'Clear history';
+    btn.disabled = false;
+  }
+});
+
+loadProfile().catch(()=>{});
+</script>
+</body>
+</html>

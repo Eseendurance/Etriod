@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ETriod — Sign in</title>
+<style>
+  :root{ --bg:#fff; --ink:#0a0a0a; --warm:#111111; --warm-soft:#f3f3f1; --line:#e8e6e2; --muted:#6c6c68; --err:#555555; --err-soft:#efefed; }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:#fbfaf8; color:var(--ink); font-family:'Inter',sans-serif; min-height:100vh; display:flex; align-items:center; justify-content:center;}
+  h1,.brand{font-family:'Space Grotesk',sans-serif;}
+  .card{width:100%; max-width:380px; background:#fff; border:1.5px solid var(--line); border-radius:18px; padding:32px; margin:20px;}
+  .brand{font-size:19px; font-weight:700; text-align:center; margin-bottom:22px;}
+  h1{font-size:22px; text-align:center; margin-bottom:6px;}
+  .sub{text-align:center; font-size:13.5px; color:var(--muted); margin-bottom:24px;}
+  .tabs{display:flex; border:1.5px solid var(--line); border-radius:10px; padding:3px; margin-bottom:22px;}
+  .tab{flex:1; text-align:center; padding:8px; border-radius:8px; font-size:13.5px; font-weight:600; cursor:pointer; color:var(--muted);}
+  .tab.active{background:var(--ink); color:#fff;}
+  label{font-size:12.5px; color:var(--muted); display:block; margin-bottom:6px;}
+  input{width:100%; padding:11px 13px; border:1.5px solid var(--line); border-radius:9px; font-family:'Inter'; font-size:14.5px; margin-bottom:14px;}
+  input:focus{outline:none; border-color:var(--warm);}
+  .name-field{display:none;}
+  .submit{width:100%; padding:12px; background:var(--warm); color:#fff; border:none; border-radius:9px; font-weight:600; font-size:14.5px; cursor:pointer;}
+  .submit:disabled{opacity:.6;}
+  .error{background:var(--err-soft); color:var(--err); font-size:13px; padding:10px 12px; border-radius:9px; margin-bottom:14px; display:none;}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="brand">ETriod</div>
+  <h1 id="heading">Welcome back</h1>
+  <div class="sub" id="subheading">Sign in to your own AI.</div>
+  <div class="tabs">
+    <div class="tab active" id="tabLogin">Sign in</div>
+    <div class="tab" id="tabSignup">Create account</div>
+  </div>
+  <div class="error" id="error"></div>
+  <form id="form">
+    <div class="name-field" id="nameField">
+      <label>Name</label>
+      <input type="text" id="name" autocomplete="name">
+    </div>
+    <label>Email</label>
+    <input type="email" id="email" required autocomplete="email">
+    <label>Password</label>
+    <input type="password" id="password" required autocomplete="current-password" minlength="8">
+    <button class="submit" type="submit" id="submitBtn">Sign in</button>
+  </form>
+  <a href="forgot-password.html" style="display:block; text-align:center; font-size:12.5px; color:var(--muted); margin-top:14px;">Forgot your password?</a>
+</div>
+
+<script src="config.js"></script>
+<script>
+let mode = 'login';
+const tabLogin = document.getElementById('tabLogin');
+const tabSignup = document.getElementById('tabSignup');
+const nameField = document.getElementById('nameField');
+const heading = document.getElementById('heading');
+const subheading = document.getElementById('subheading');
+const submitBtn = document.getElementById('submitBtn');
+const errorEl = document.getElementById('error');
+
+function setMode(m){
+  mode = m;
+  tabLogin.classList.toggle('active', m==='login');
+  tabSignup.classList.toggle('active', m==='signup');
+  nameField.style.display = m==='signup' ? 'block' : 'none';
+  document.getElementById('name').required = m === 'signup';
+  heading.textContent = m==='login' ? 'Welcome back' : 'Create your account';
+  subheading.textContent = m==='login' ? 'Sign in to your own AI.' : 'Takes about ten seconds.';
+  submitBtn.textContent = m==='login' ? 'Sign in' : 'Create account';
+  errorEl.style.display = 'none';
+}
+tabLogin.onclick = ()=> setMode('login');
+tabSignup.onclick = ()=> setMode('signup');
+
+document.getElementById('form').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  errorEl.style.display = 'none';
+  submitBtn.disabled = true;
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const name = document.getElementById('name').value.trim();
+
+  try{
+    const path = mode === 'login' ? '/api/auth/login' : '/api/auth/signup';
+    const body = mode === 'login' ? { email, password } : { name, email, password };
+    const res = await fetch(window.ETRIOD_API + path, {
+      method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if(!res.ok){ throw new Error(data.error || 'Something went wrong.'); }
+    localStorage.setItem('etriod_token', data.token);
+    localStorage.setItem('etriod_user', JSON.stringify(data.user));
+    const returnQuery = window.location.search; // e.g. ?q=Draft+a+follow-up+email, from a template link
+    window.location.href = data.user.onboarded ? ('app.html' + returnQuery) : 'welcome.html';
+  }catch(err){
+    errorEl.textContent = err.message;
+    errorEl.style.display = 'block';
+  }
+  submitBtn.disabled = false;
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ETriod — Verify email</title>
+<style>
+  :root{ --ink:#0a0a0a; --warm:#111111; --line:#e8e6e2; --muted:#6c6c68; }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:#fbfaf8; color:var(--ink); font-family:'Inter',sans-serif; min-height:100vh; display:flex; align-items:center; justify-content:center;}
+  .brand{font-family:'Space Grotesk',sans-serif; font-size:19px; font-weight:700; text-align:center; margin-bottom:22px;}
+  .card{width:100%; max-width:380px; background:#fff; border:1.5px solid var(--line); border-radius:18px; padding:32px; text-align:center; margin:20px;}
+  .badge{width:52px; height:52px; border-radius:50%; margin:0 auto 16px; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:700; font-family:'Space Grotesk';}
+  .badge.ok{background:#f0f0ed; color:#111;}
+  .badge.err{background:#f0f0ed; color:#111;}
+  h1{font-family:'Space Grotesk',sans-serif; font-size:19px; margin-bottom:8px;}
+  p{font-size:14px; color:var(--muted); margin-bottom:20px;}
+  a.btn{display:inline-block; background:var(--warm); color:#fff; padding:11px 22px; border-radius:9px; font-weight:600; font-size:14px; text-decoration:none;}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="brand">ETriod</div>
+  <div id="content">Verifying…</div>
+</div>
+<script src="config.js"></script>
+<script>
+const token = new URLSearchParams(window.location.search).get('token');
+const content = document.getElementById('content');
+
+async function run(){
+  if(!token){
+    content.innerHTML = '<div class="badge err">!</div><h1>Missing link</h1><p>This page needs a verification link from your email.</p>';
+    return;
+  }
+  try{
+    const res = await fetch(window.ETRIOD_API + '/api/auth/verify-email', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ token })
+    });
+    const data = await res.json();
+    if(res.ok){
+      content.innerHTML = '<div class="badge ok">✓</div><h1>Email verified</h1><p>'+data.message+'</p><a class="btn" href="app.html">Open ETriod</a>';
+    }else{
+      content.innerHTML = '<div class="badge err">!</div><h1>Couldn\'t verify</h1><p>'+data.error+'</p>';
+    }
+  }catch(e){
+    content.innerHTML = '<div class="badge err">!</div><h1>Network error</h1><p>Please try again in a moment.</p>';
+  }
+}
+run();
+</script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ETriod — Hub</title>
+<style>
+  :root{ --bg:#fff; --ink:#0a0a0a; --warm:#111111; --warm-soft:#f3f3f1; --line:#e8e6e2; --muted:#6c6c68; }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:#fbfaf8; color:var(--ink); font-family:'Inter',sans-serif;}
+  h1,h2,h3,.brand{font-family:'Space Grotesk',sans-serif;}
+  a{text-decoration:none; color:inherit;}
+  .wrap{max-width:920px; margin:0 auto; padding:0 24px;}
+  nav{display:flex; justify-content:space-between; align-items:center; padding:22px 0;}
+  .brand{font-size:19px; font-weight:700;}
+
+  .head{padding:24px 0 40px; opacity:0; animation:up .5s ease forwards;}
+  .head h1{font-size:32px; letter-spacing:-0.02em; margin-bottom:8px;}
+  .head p{color:var(--muted); font-size:15px;}
+  @keyframes up{from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);}}
+
+  .section-label{font-size:12.5px; font-weight:600; color:var(--warm); margin:28px 0 12px;}
+  .grid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
+  .tile{border:1.5px solid var(--line); border-radius:16px; padding:20px; background:#fff; opacity:0; animation:up .45s ease forwards;}
+  .tile:hover{border-color:var(--warm); background:var(--warm-soft);}
+  .tile .icon{width:34px; height:34px; border-radius:9px; background:var(--ink); color:#fff; display:flex; align-items:center; justify-content:center; font-size:15px; margin-bottom:14px; font-family:'Space Grotesk'; font-weight:600;}
+  .tile.primary .icon{background:var(--warm);}
+  .tile h3{font-size:15px; margin-bottom:5px;}
+  .tile p{font-size:12.5px; color:var(--muted); line-height:1.4;}
+
+  footer{padding:40px 0; color:var(--muted); font-size:13px; text-align:center;}
+  @media (max-width:720px){ .grid{grid-template-columns:1fr 1fr;} }
+  @media (max-width:480px){ .grid{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav><span class="brand">ETriod</span></nav>
+
+  <div class="head">
+    <h1>Everything in one place.</h1>
+    <p>Your own AI, its app, and everything around it.</p>
+  </div>
+
+  <div class="section-label">Use it</div>
+  <div class="grid" id="useGrid"></div>
+
+  <div class="section-label">Explore</div>
+  <div class="grid" id="exploreGrid"></div>
+
+  <div class="section-label">Manage</div>
+  <div class="grid" id="manageGrid"></div>
+</div>
+
+<footer>ETriod — your own AI, always on.</footer>
+
+<script>
+const TILES = {
+  useGrid: [
+    { icon:'E', primary:true, t:'Open ETriod', d:'Your assistant, ready to talk.', href:'login.html' },
+    { icon:'⧉', t:'Templates', d:'Start from a ready-made prompt.', href:'templates.html' },
+    { icon:'↝', t:'Get started', d:'A quick welcome for new users.', href:'welcome.html' },
+  ],
+  exploreGrid: [
+    { icon:'◐', t:'Landing page', d:'Feature-led overview of ETriod.', href:'landing.html' },
+    { icon:'◑', t:'Landing page v2', d:'A more narrative take.', href:'landing-v2.html' },
+    { icon:'$', t:'Pricing', d:'Plans, and the early-access waitlist.', href:'pricing.html' },
+  ],
+  manageGrid: [
+    { icon:'⚙', t:'Settings', d:'Profile, preferences, your data.', href:'settings.html' },
+    { icon:'▤', t:'Admin dashboard', d:'Live usage across everyone.', href:'admin.html' },
+    { icon:'?', t:'Help & FAQ', d:'Common questions, answered.', href:'help.html' },
+  ]
+};
+
+function renderGrid(id, items){
+  const el = document.getElementById(id);
+  items.forEach((item, i)=>{
+    const a = document.createElement('a');
+    a.className = 'tile' + (item.primary ? ' primary' : '');
+    a.href = item.href;
+    a.style.animationDelay = (0.04*i) + 's';
+    a.innerHTML = '<div class="icon">'+item.icon+'</div><h3>'+item.t+'</h3><p>'+item.d+'</p>';
+    el.appendChild(a);
+  });
+}
+Object.keys(TILES).forEach(id => renderGrid(id, TILES[id]));
+</script>
+</body>
+</html>
