@@ -1,6 +1,5 @@
 node_modules
 .env
 *.log
-client
 smoke-test.js
 .git

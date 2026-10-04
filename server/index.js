@@ -4,6 +4,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
+const path = require('path');
 const { PostgresRateLimitStore } = require('./rateLimitStore');
 
 const { healthCheck, shutdown } = require('./db');
@@ -15,6 +16,8 @@ const settingsRoutes = require('./routes/settings');
 const billingRoutes = require('./routes/billing');
 const waitlistRoutes = require('./routes/waitlist');
 const adminRoutes = require('./routes/admin');
+const companyRoutes = require('./routes/company');
+const cronRoutes = require('./routes/cron');
 
 const app = express();
 app.set('trust proxy', 1); // needed for correct client IPs behind a load balancer (Railway/Render/etc), which rate limiting relies on
@@ -35,6 +38,7 @@ app.post('/api/billing/flutterwave/webhook', express.raw({ type: 'application/js
 app.post('/api/billing/paystack/webhook', express.raw({ type: 'application/json' }), billingRoutes.paystackWebhookHandler);
 
 app.use(express.json({ limit: '100kb' }));
+app.use('/api/cron', cronRoutes);
 
 // Rate limits: generous defaults, tightened specifically on the endpoints
 // that either cost real money (chat) or are classic brute-force targets (auth).
@@ -77,6 +81,19 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api/billing', billingRoutes);
 app.use('/api/waitlist', waitlistRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/company', companyRoutes);
+
+app.use(express.static(path.join(__dirname, '..', 'client'), {
+  index: false,
+  setHeaders(res, filePath) {
+    if (filePath.endsWith('.html') || filePath.endsWith('sw.js')) {
+      res.setHeader('Cache-Control', 'no-cache');
+    } else {
+      res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
+    }
+  }
+}));
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, '..', 'client', 'landing.html')));
 
 app.use((req, res) => res.status(404).json({ error: 'Not found.' }));
 
@@ -86,25 +103,18 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Something went wrong on our end.' });
 });
 
-// Last-resort safety nets log failures before the process could crash
-// uncontrolled. The pool.on('error') handler
-// in db.js already covers the most common case (a dropped DB connection);
-// these two cover everything else.
-process.on('uncaughtException', (err) => {
-  captureException(err, { source: 'uncaughtException' });
-});
-process.on('unhandledRejection', (reason) => {
-  captureException(reason instanceof Error ? reason : new Error(String(reason)), { source: 'unhandledRejection' });
-});
-
-const port = process.env.PORT || 3000;
-const server = app.listen(port, () => {
-  console.log(`ETriod API listening on port ${port}`);
-  if (!process.env.DATABASE_URL) console.warn('⚠️  DATABASE_URL not set — see .env.example');
-  console.log(`Private AI endpoint: ${process.env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434'} (${process.env.OLLAMA_MODEL || 'llama3.2:3b'})`);
-  if (!process.env.STRIPE_SECRET_KEY) console.warn('⚠️  STRIPE_SECRET_KEY not set — billing will not work until it is');
-  if (!process.env.SMTP_HOST) console.warn('ℹ️  SMTP_HOST not set — password reset emails will log to the console instead of sending');
-});
+let server;
+function start() {
+  const port = process.env.PORT || 3000;
+  server = app.listen(port, () => {
+    console.log(`ETriod API listening on port ${port}`);
+    if (!process.env.DATABASE_URL) console.warn('⚠️  DATABASE_URL not set — see .env.example');
+    console.log(`Private AI endpoint: ${process.env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434'} (${process.env.OLLAMA_MODEL || 'llama3.2:3b'})`);
+    if (!process.env.STRIPE_SECRET_KEY) console.warn('⚠️  STRIPE_SECRET_KEY not set — billing will not work until it is');
+    if (!process.env.SMTP_HOST) console.warn('ℹ️  SMTP_HOST not set — password reset emails will log to the console instead of sending');
+  });
+  return server;
+}
 
 // Graceful shutdown: stop accepting new connections, let in-flight requests
 // finish, then close the database pool cleanly. Matters for zero-downtime
@@ -114,6 +124,7 @@ function gracefulShutdown(signal) {
   generalLimiter.store.shutdown();
   authLimiter.store.shutdown();
   chatLimiter.store.shutdown();
+  if (!server) return shutdown().then(() => process.exit(0));
   server.close(async () => {
     await shutdown();
     console.log('Shutdown complete.');
@@ -124,7 +135,12 @@ function gracefulShutdown(signal) {
     process.exit(1);
   }, 10000).unref();
 }
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+if (require.main === module) {
+  process.on('uncaughtException', (err) => captureException(err, { source: 'uncaughtException' }));
+  process.on('unhandledRejection', (reason) => captureException(reason instanceof Error ? reason : new Error(String(reason)), { source: 'unhandledRejection' }));
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+  start();
+}
 
-module.exports = { app, server };
+module.exports = { app, start };

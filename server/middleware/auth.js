@@ -15,11 +15,19 @@ function requireAuth(req, res, next) {
   }
 }
 
-function requireAdmin(req, res, next) {
-  if (!req.user || req.user.role !== 'admin') {
-    return res.status(403).json({ error: 'Admin access required.' });
+async function requireAdmin(req, res, next) {
+  if (!req.user) return res.status(401).json({ error: 'Not signed in.' });
+  try {
+    const { pool } = require('../db');
+    const result = await pool.query('SELECT role FROM users WHERE id = $1', [req.user.id]);
+    if (!result.rows.length || result.rows[0].role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required.' });
+    }
+    next();
+  } catch (err) {
+    console.error('[auth/require-admin]', err);
+    res.status(500).json({ error: 'Could not verify administrator access.' });
   }
-  next();
 }
 
 module.exports = { requireAuth, requireAdmin };

@@ -30,7 +30,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:-dev_only_change_me}
       OLLAMA_BASE_URL: http://ollama:11434
       OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2:3b}
-      OLLAMA_TIMEOUT_MS: ${OLLAMA_TIMEOUT_MS:-120000}
+      OLLAMA_TIMEOUT_MS: ${OLLAMA_TIMEOUT_MS:-50000}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
       STRIPE_TEAM_PRICE_ID: ${STRIPE_TEAM_PRICE_ID:-}
@@ -52,6 +52,7 @@ services:
       SMTP_FROM: ${SMTP_FROM:-}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:5500}
       APP_URL: ${APP_URL:-http://localhost:5500}
+      CRON_SECRET: ${CRON_SECRET:-}
       PORT: 3000
     ports:
       - "3000:3000"

@@ -6,7 +6,7 @@ if (!process.env.DATABASE_URL) {
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  max: parseInt(process.env.DB_POOL_MAX || '10', 10),
+  max: parseInt(process.env.DB_POOL_MAX || '3', 10),
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 5000,
   ssl: process.env.DATABASE_URL && process.env.DATABASE_URL.includes('sslmode=require')

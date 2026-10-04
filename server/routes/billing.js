@@ -38,6 +38,27 @@ async function createPaymentOrder(userId, provider, reference) {
   );
 }
 
+function stripeMajorAmount(amount, currency) {
+  const zeroDecimalCurrencies = new Set([
+    'bif', 'clp', 'djf', 'gnf', 'jpy', 'kmf', 'krw', 'mga', 'pyg',
+    'rwf', 'ugx', 'vnd', 'vuv', 'xaf', 'xof', 'xpf'
+  ]);
+  return Number(amount) / (zeroDecimalCurrencies.has(String(currency).toLowerCase()) ? 1 : 100);
+}
+
+async function recordPaidOrder({ userId, provider, reference, amount, currency, majorUnits = true }) {
+  const paidAmount = majorUnits ? Number(amount) : stripeMajorAmount(amount, currency);
+  if (!Number.isFinite(paidAmount) || paidAmount <= 0 || !reference) return;
+  await pool.query(
+    `INSERT INTO payment_orders
+       (id, user_id, payment_provider, provider_reference, expected_amount, paid_amount, currency, status, paid_at)
+     VALUES ($1, $2, $3, $4, $5, $5, $6, 'paid', now())
+     ON CONFLICT (payment_provider, provider_reference) DO UPDATE SET
+       status = 'paid', paid_amount = EXCLUDED.paid_amount, paid_at = COALESCE(payment_orders.paid_at, now())`,
+    [crypto.randomUUID(), userId, provider, reference, paidAmount, String(currency).toUpperCase()]
+  );
+}
+
 async function saveSubscription({ userId, provider, providerSubscriptionId, providerCustomerId, stripeId, status, currentPeriodEnd }) {
   if (!userId || !providerSubscriptionId) throw new Error('Verified payment did not include a subscription reference.');
   await pool.query(
@@ -202,7 +223,25 @@ async function stripeWebhookHandler(req, res) {
     return res.status(400).send('Webhook signature verification failed.');
   }
   try {
-    if (['customer.subscription.updated', 'customer.subscription.created', 'customer.subscription.deleted'].includes(event.type)) {
+    if (event.type === 'invoice.payment_succeeded') {
+      const invoice = event.data.object;
+      const customerId = typeof invoice.customer === 'string' ? invoice.customer : invoice.customer?.id;
+      const userResult = customerId
+        ? await pool.query('SELECT id FROM users WHERE stripe_customer_id = $1', [customerId])
+        : { rows: [] };
+      if (userResult.rows.length) {
+        await recordPaidOrder({
+          userId: userResult.rows[0].id,
+          provider: 'stripe',
+          reference: invoice.id,
+          amount: invoice.amount_paid,
+          currency: invoice.currency,
+          majorUnits: false
+        });
+      } else {
+        console.error('[billing/stripe-webhook] paid invoice has no matching customer', invoice.id);
+      }
+    } else if (['customer.subscription.updated', 'customer.subscription.created', 'customer.subscription.deleted'].includes(event.type)) {
       const sub = event.data.object;
       const userResult = await pool.query('SELECT id FROM users WHERE stripe_customer_id = $1', [sub.customer]);
       if (userResult.rows.length) {
@@ -307,7 +346,11 @@ async function flutterwaveWebhookHandler(req, res) {
         status: 'active',
         currentPeriodEnd: null
       });
-      await pool.query(`UPDATE payment_orders SET status = 'paid' WHERE id = $1 AND status = 'pending'`, [order.id]);
+      await pool.query(
+        `UPDATE payment_orders SET status = 'paid', paid_amount = $2, paid_at = COALESCE(paid_at, now())
+         WHERE id = $1 AND status = 'pending'`,
+        [order.id, Number(tx.amount)]
+      );
     } else if (tx.subscription_id) {
       const updated = await pool.query(
         `UPDATE subscriptions SET status = 'active'
@@ -316,6 +359,10 @@ async function flutterwaveWebhookHandler(req, res) {
         [String(tx.subscription_id)]
       );
       if (!updated.rows.length) return res.status(400).send('Payment is not associated with an active subscription.');
+      await recordPaidOrder({
+        userId: updated.rows[0].user_id, provider: 'flutterwave',
+        reference: tx.tx_ref, amount: tx.amount, currency: tx.currency
+      });
     } else {
       return res.status(400).send('Payment order was not found.');
     }
@@ -394,6 +441,10 @@ async function paystackWebhookHandler(req, res) {
         [subscriptionId]
       );
       if (!updated.rows.length) return res.status(400).send('Payment is not associated with an active subscription.');
+      await recordPaidOrder({
+        userId: updated.rows[0].user_id, provider: 'paystack',
+        reference, amount: tx.amount / 100, currency: tx.currency
+      });
       return res.json({ received: true });
     }
     if (order.status === 'paid') return res.json({ received: true });
@@ -410,7 +461,11 @@ async function paystackWebhookHandler(req, res) {
       status: 'active',
       currentPeriodEnd: sub?.next_payment_date ? new Date(sub.next_payment_date) : null
     });
-    await pool.query(`UPDATE payment_orders SET status = 'paid' WHERE id = $1 AND status = 'pending'`, [order.id]);
+    await pool.query(
+      `UPDATE payment_orders SET status = 'paid', paid_amount = $2, paid_at = COALESCE(paid_at, now())
+       WHERE id = $1 AND status = 'pending'`,
+      [order.id, Number(tx.amount) / 100]
+    );
     res.json({ received: true });
   } catch (err) {
     captureException(err, { route: 'billing/paystack-webhook' });

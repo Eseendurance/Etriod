@@ -99,6 +99,9 @@ async function main() {
         customer: { customer_code: 'ps-customer-test' }
       } });
     }
+    if (target.hostname === 'api.stripe.test') {
+      return Response.json({});
+    }
     if (String(url).startsWith('http://ollama.test/')) {
       if (!process.env.TEST_OLLAMA_READY) return new Response('model unavailable', { status: 503 });
       const body = JSON.parse(options.body);
@@ -138,6 +141,10 @@ async function main() {
   app.use('/api/settings', require('./server/routes/settings'));
   app.use('/api/waitlist', require('./server/routes/waitlist'));
   app.use('/api/admin', require('./server/routes/admin'));
+  app.use('/api/company', require('./server/routes/company'));
+  app.use('/api/cron', require('./server/routes/cron'));
+  app.use(express.static(require('path').join(__dirname, 'client'), { index: false }));
+  app.get('/', (req, res) => res.sendFile(require('path').join(__dirname, 'client', 'landing.html')));
 
   const server = app.listen(0);
   const port = server.address().port;
@@ -165,11 +172,23 @@ async function main() {
   check('billing exposes only providers configured on the server', billingConfig.status === 200 && billingConfig.json.providers.length === 0);
   const billingUnauth = await req('POST', '/api/billing/checkout', { provider: 'stripe' });
   check('checkout rejects unauthenticated requests', billingUnauth.status === 401);
+  const staticCompanyPage = await fetch(base + '/company.html');
+  check('company workspace frontend is served as part of the same deployment', staticCompanyPage.status === 200);
+  const staticLanding = await fetch(base + '/');
+  check('the app landing page is served at the deployment root', staticLanding.status === 200);
   const sharedLimitA = await req('GET', '/test/shared-limit-a');
   const sharedLimitB = await req('GET', '/test/shared-limit-b');
   const sharedLimitExceeded = await req('GET', '/test/shared-limit-a');
   check('rate limits are shared across independent app instances', sharedLimitA.status === 200 &&
     sharedLimitB.status === 200 && sharedLimitExceeded.status === 429);
+  const cronWithoutSecret = await req('GET', '/api/cron/cleanup');
+  check('scheduled cleanup remains disabled until its secret is configured', cronWithoutSecret.status === 503);
+  process.env.CRON_SECRET = 'cron-test-secret';
+  const cronInvalid = await fetch(base + '/api/cron/cleanup', { headers: { Authorization: 'Bearer wrong' } });
+  check('scheduled cleanup rejects requests without its bearer secret', cronInvalid.status === 401);
+  const cronRun = await fetch(base + '/api/cron/cleanup', { headers: { Authorization: 'Bearer cron-test-secret' } });
+  check('scheduled cleanup runs authenticated retention deletes transactionally', cronRun.status === 200 &&
+    (await cronRun.json()).ok === true);
 
   const signup = await req('POST', '/api/auth/signup', { name: 'Ada', email: 'ada@example.com', password: 'password123' });
   check('signup returns 201 with token + user', signup.status === 201 && !!signup.json.token && signup.json.user.email === 'ada@example.com');
@@ -205,6 +224,8 @@ async function main() {
   process.env.PAYSTACK_TEAM_AMOUNT = '19';
   const configuredGateways = await req('GET', '/api/billing/config');
   check('billing lists only the two configured gateways', configuredGateways.json.providers.length === 2);
+  const companyFreeTier = await req('POST', '/api/company', { name: 'Should Not Exist' }, token);
+  check('company workspace creation requires a paid Team plan', companyFreeTier.status === 403);
   const flutterwaveCheckout = await req('POST', '/api/billing/checkout', { provider: 'flutterwave' }, token);
   check('Flutterwave checkout returns its hosted payment URL', flutterwaveCheckout.status === 200 && flutterwaveCheckout.json.url === 'https://checkout.flutterwave.com/test');
   const paystackCheckout = await req('POST', '/api/billing/checkout', { provider: 'paystack' }, token);
@@ -237,8 +258,37 @@ async function main() {
     method: 'POST', headers: { 'Content-Type': 'application/json', 'x-paystack-signature': psSignature }, body: psPayload
   });
   check('Paystack signed and verified charge activates its subscription', psWebhook.status === 200);
+  const captured = await pool.query(
+    `SELECT COUNT(*) AS count FROM payment_orders WHERE status = 'paid' AND paid_at IS NOT NULL`
+  );
+  check('verified Flutterwave and Paystack payments are captured for billing analytics', Number(captured.rows[0].count) === 2);
   const duplicateCheckout = await req('POST', '/api/billing/checkout', { provider: 'paystack' }, token);
   check('an active subscription cannot accidentally start a second paid plan', duplicateCheckout.status === 409);
+  const companyCreated = await req('POST', '/api/company', { name: 'Ada Company' }, token);
+  check('a paid subscriber can create a company workspace as its owner', companyCreated.status === 201 && companyCreated.json.company.role === 'owner');
+  const companyOverview = await req('GET', '/api/company/overview', null, token);
+  check('company usage is scoped to the workspace and includes the owner', companyOverview.status === 200 &&
+    Number(companyOverview.json.stats.members) === 1 && companyOverview.json.members[0].role === 'owner');
+  const memberSignup = await req('POST', '/api/auth/signup', { name: 'Lin', email: 'lin@example.com', password: 'password123' });
+  const memberAdded = await req('POST', '/api/company/members', { email: 'lin@example.com' }, token);
+  check('company owner can add an existing Etriod account', memberAdded.status === 201 && memberAdded.json.member.role === 'member');
+  const companyPage = await req('GET', '/api/company/overview?limit=1&offset=0', null, token);
+  check('company member directory uses bounded pagination', companyPage.status === 200 &&
+    companyPage.json.members.length === 1 && companyPage.json.pagination.hasMore);
+  const memberRole = await req('PATCH', `/api/company/members/${memberSignup.json.user.id}`, { role: 'admin' }, token);
+  check('company owner can grant a member the company admin role', memberRole.status === 200 && memberRole.json.member.role === 'admin');
+  const memberAdminDemotion = await req('PATCH', `/api/company/members/${memberSignup.json.user.id}`, { role: 'member' }, memberSignup.json.token);
+  check('company admin cannot change another administrator role', memberAdminDemotion.status === 404);
+  const globalAdminDenied = await req('GET', '/api/admin/overview', null, memberSignup.json.token);
+  check('company admin cannot access global platform admin analytics', globalAdminDenied.status === 403);
+  const memberRemoved = await req('DELETE', `/api/company/members/${memberSignup.json.user.id}`, null, token);
+  check('company owner can remove members without deleting their account', memberRemoved.status === 200);
+  await pool.query(`UPDATE subscriptions SET status = 'canceled' WHERE user_id = $1`, [login.json.user.id]);
+  await pool.query(`UPDATE users SET plan = 'personal' WHERE id = $1`, [login.json.user.id]);
+  const expiredCompany = await req('GET', '/api/company/overview', null, token);
+  check('company access is suspended when its owner subscription ends', expiredCompany.status === 402);
+  await pool.query(`UPDATE subscriptions SET status = 'active' WHERE user_id = $1`, [login.json.user.id]);
+  await pool.query(`UPDATE users SET plan = 'team' WHERE id = $1`, [login.json.user.id]);
   const me = await req('GET', '/api/auth/me', null, token);
   check('/me returns the signed-in user', me.status === 200 && me.json.user.name === 'Ada');
   check('/me reflects the email as verified after verify-email', me.json.user.emailVerified === true);
@@ -330,6 +380,21 @@ async function main() {
   const adminLoginAgain = await req('POST', '/api/auth/login', { email: 'ada@example.com', password: 'password123' });
   const adminOverview = await req('GET', '/api/admin/overview', null, adminLoginAgain.json.token);
   check('admin overview works once role is admin, and reflects real conversation count', adminOverview.status === 200 && adminOverview.json.totals.total_conversations >= 1);
+  await pool.query(`UPDATE users SET role = 'admin' WHERE email = 'lin@example.com'`);
+  const promotedAdmin = await req('GET', '/api/admin/overview', null, memberSignup.json.token);
+  await pool.query(`UPDATE users SET role = 'member' WHERE email = 'lin@example.com'`);
+  const revokedAdmin = await req('GET', '/api/admin/overview', null, memberSignup.json.token);
+  check('platform admin permissions use the current database role, not stale JWT claims', promotedAdmin.status === 200 && revokedAdmin.status === 403);
+  check('platform overview includes user, subscriber, and company investor metrics', Number(adminOverview.json.totals.total_users) >= 2 &&
+    Number(adminOverview.json.totals.active_subscriptions) >= 1 && Number(adminOverview.json.totals.total_companies) === 1);
+  const adminBilling = await req('GET', '/api/admin/billing', null, adminLoginAgain.json.token);
+  check('billing dashboard reports actual captured revenue by currency and provider', adminBilling.status === 200 &&
+    adminBilling.json.providerTotals.length === 2 && adminBilling.json.monthlyRevenue.length > 0);
+  check('billing analytics identifies the latest verified monthly run-rate', adminBilling.status === 200 &&
+    adminBilling.json.estimatedMrr.length > 0 && Number(adminBilling.json.estimatedMrr[0].estimated_mrr) > 0);
+  const adminCompanies = await req('GET', '/api/admin/companies', null, adminLoginAgain.json.token);
+  check('platform operators can view aggregate company workspace activity', adminCompanies.status === 200 &&
+    adminCompanies.json.companies.length === 1 && adminCompanies.json.companies[0].name === 'Ada Company');
 
   const tooLong = await req('POST', `/api/conversations/${convoId}/messages`, { content: 'x'.repeat(8001) }, token);
   check('overly long message is rejected with 400, not sent to the model', tooLong.status === 400);

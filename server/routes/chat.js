@@ -43,7 +43,7 @@ async function generate(messages) {
     response = await fetch(`${modelUrl()}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      signal: AbortSignal.timeout(Number(process.env.OLLAMA_TIMEOUT_MS || 120000)),
+      signal: AbortSignal.timeout(Number(process.env.OLLAMA_TIMEOUT_MS || 50000)),
       body: JSON.stringify({
         model: modelName(),
         messages,
@@ -136,7 +136,7 @@ router.post('/:conversationId/stream', async (req, res) => {
 
   let upstream;
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), Number(process.env.OLLAMA_TIMEOUT_MS || 120000));
+  const timer = setTimeout(() => controller.abort(), Number(process.env.OLLAMA_TIMEOUT_MS || 50000));
   try {
     upstream = await fetch(`${modelUrl()}/api/chat`, {
       method: 'POST',

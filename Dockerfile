@@ -6,6 +6,8 @@ COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 
 COPY server ./server
+COPY client ./client
+COPY index.js ./
 COPY migrations ./migrations
 COPY scripts ./scripts
 COPY schema.sql ./schema.sql

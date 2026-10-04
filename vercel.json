@@ -1,0 +1,14 @@
+{
+  "functions": {
+    "index.js": {
+      "maxDuration": 60,
+      "includeFiles": "client/**"
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/cleanup",
+      "schedule": "17 3 * * *"
+    }
+  ]
+}
