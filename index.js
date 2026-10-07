@@ -1,3 +1,7 @@
+const express = require('express');
 const { app } = require('./server/index');
 
-module.exports = app;
+const vercelApp = express();
+vercelApp.use(app);
+
+module.exports = vercelApp;
