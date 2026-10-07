@@ -109,7 +109,7 @@ function start() {
   server = app.listen(port, () => {
     console.log(`ETriod API listening on port ${port}`);
     if (!process.env.DATABASE_URL) console.warn('⚠️  DATABASE_URL not set — see .env.example');
-    console.log(`Private AI endpoint: ${process.env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434'} (${process.env.OLLAMA_MODEL || 'llama3.2:3b'})`);
+    console.log(`Private AI endpoint: ${process.env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434'} (${process.env.OLLAMA_MODEL || 'qwen3:8b'})`);
     if (!process.env.STRIPE_SECRET_KEY) console.warn('⚠️  STRIPE_SECRET_KEY not set — billing will not work until it is');
     if (!process.env.SMTP_HOST) console.warn('ℹ️  SMTP_HOST not set — password reset emails will log to the console instead of sending');
   });

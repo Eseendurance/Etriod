@@ -92,7 +92,8 @@ document.getElementById('form').addEventListener('submit', async (e)=>{
     if(!res.ok){ throw new Error(data.error || 'Something went wrong.'); }
     localStorage.setItem('etriod_token', data.token);
     localStorage.setItem('etriod_user', JSON.stringify(data.user));
-    const returnQuery = window.location.search; // e.g. ?q=Draft+a+follow-up+email, from a template link
+    const returnQuery = window.location.search;
+    if (returnQuery) sessionStorage.setItem('etriod_return_query', returnQuery);
     window.location.href = data.user.onboarded ? ('app.html' + returnQuery) : 'welcome.html';
   }catch(err){
     errorEl.textContent = err.message;

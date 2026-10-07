@@ -5,6 +5,9 @@
       "includeFiles": "client/**"
     }
   },
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.js" }
+  ],
   "crons": [
     {
       "path": "/api/cron/cleanup",

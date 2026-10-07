@@ -5,7 +5,7 @@ const { requireAuth } = require('../middleware/auth');
 const { captureException } = require('../errorTracking');
 
 const router = express.Router();
-const SYSTEM_PROMPT = `You are Etriod, a warm, capable personal assistant running on the owner's private AI server. Be clear, thoughtful, and concise. Help users reason, plan, draft, and organize. Be honest about uncertainty. You cannot access external accounts or execute real-world actions in this app yet, so never claim to have sent messages, made purchases, changed calendars, or completed errands. You may prepare drafts and step-by-step plans, and should ask before any consequential action.`;
+const SYSTEM_PROMPT = `You are Etriod, a capable general-purpose personal AI assistant. Help with reasoning, writing, coding, mathematics, learning, translation, planning, and everyday questions. Be clear, warm, practical, and appropriately concise. For complex requests, organize the answer into useful steps and give a brief rationale without revealing hidden chain-of-thought. Check arithmetic and code carefully. State uncertainty, assumptions, and knowledge limits; never invent sources or claim to have browsed the web. You cannot access external accounts or execute real-world actions in this app: never claim to send messages, make purchases, change calendars, or complete errands. You can prepare drafts, explain how to do something, and help the user plan the next action. Ask a focused clarifying question when a missing detail materially changes the result.`;
 router.use(requireAuth);
 
 function modelUrl() {
@@ -13,7 +13,22 @@ function modelUrl() {
 }
 
 function modelName() {
-  return process.env.OLLAMA_MODEL || 'llama3.2:3b';
+  return process.env.OLLAMA_MODEL || 'qwen3:8b';
+}
+
+function modelOptions() {
+  const configuredContext = Number.parseInt(process.env.OLLAMA_NUM_CTX || '16384', 10);
+  const configuredOutput = Number.parseInt(process.env.OLLAMA_NUM_PREDICT || '2048', 10);
+  return {
+    num_ctx: Number.isFinite(configuredContext) ? Math.min(Math.max(configuredContext, 2048), 32768) : 16384,
+    num_predict: Number.isFinite(configuredOutput) ? Math.min(Math.max(configuredOutput, 128), 8192) : 2048
+  };
+}
+
+function thinkingOption() {
+  if (process.env.OLLAMA_THINKING === 'true') return true;
+  if (process.env.OLLAMA_THINKING === 'false') return false;
+  return undefined;
 }
 
 function modelUnavailable() {
@@ -48,7 +63,8 @@ async function generate(messages) {
         model: modelName(),
         messages,
         stream: false,
-        options: { num_predict: 1024 }
+        ...(thinkingOption() === undefined ? {} : { think: thinkingOption() }),
+        options: modelOptions()
       })
     });
   } catch (err) {
@@ -146,7 +162,8 @@ router.post('/:conversationId/stream', async (req, res) => {
         model: modelName(),
         messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...history.rows],
         stream: true,
-        options: { num_predict: 1024 }
+        ...(thinkingOption() === undefined ? {} : { think: thinkingOption() }),
+        options: modelOptions()
       })
     });
   } catch (err) {

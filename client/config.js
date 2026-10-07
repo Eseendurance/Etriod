@@ -7,3 +7,13 @@ window.ETRIOD_API = window.ETRIOD_API || (
     ? 'http://localhost:3000'
     : window.location.origin
 );
+
+const landingPrompt = new URLSearchParams(window.location.search).get('q');
+if (landingPrompt && localStorage.getItem('etriod_token') && window.location.pathname.endsWith('/app.html')) {
+  const composer = document.getElementById('input');
+  if (composer) {
+    composer.value = landingPrompt;
+    composer.focus();
+    window.history.replaceState(null, '', window.location.pathname);
+  }
+}

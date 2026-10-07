@@ -64,6 +64,10 @@
 const token = localStorage.getItem('etriod_token');
 if(!token){ window.location.href = 'login.html'; }
 const headers = { 'Content-Type':'application/json', 'Authorization':'Bearer '+token };
+const returnQuery = sessionStorage.getItem('etriod_return_query') || '';
+const openAssistant = document.querySelector('#step2 a.btn-primary');
+openAssistant.href = 'app.html' + returnQuery;
+openAssistant.addEventListener('click', () => sessionStorage.removeItem('etriod_return_query'));
 
 let selectedUse = null;
 try{

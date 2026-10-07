@@ -13,7 +13,7 @@ endpoint; it is not sent to an AI vendor API.
   messages, password resets, email verifications, waitlist signups,
   subscriptions.
 - **AI**: uses an Ollama-compatible self-hosted server configured with
-  `OLLAMA_BASE_URL` and `OLLAMA_MODEL`. No Anthropic SDK, API key, or model
+  `OLLAMA_BASE_URL` and `OLLAMA_MODEL` (default `qwen3:8b`). No AI vendor API
   vendor API is used. Context is capped to 40 messages; input is capped at
   8,000 characters.
 - **Billing**: Stripe, Flutterwave, and Paystack hosted checkout with signed
@@ -209,7 +209,7 @@ docker compose up --build
 Download the model into the private Ollama service once:
 
 ```bash
-docker compose exec ollama ollama pull llama3.2:3b
+docker compose exec ollama ollama pull qwen3:8b
 ```
 
 Then open `client/login.html` through the app or a static server. The browser

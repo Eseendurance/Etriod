@@ -27,6 +27,7 @@
   .kicker{color:var(--warm); font-weight:600; font-size:14px; margin-bottom:14px; opacity:0; animation:fadeUp .6s ease forwards;}
   .hero h1{font-size:52px; line-height:1.08; letter-spacing:-0.02em; margin-bottom:18px; opacity:0; animation:fadeUp .6s ease .1s forwards;}
   .hero p{font-size:17px; color:var(--muted); max-width:440px; margin-bottom:28px; opacity:0; animation:fadeUp .6s ease .2s forwards;}
+  .prompt-search{display:flex;align-items:center;gap:10px;max-width:720px;margin:0 0 12px;padding:8px 9px 8px 16px;border:1px solid #aaa;border-radius:13px;background:#fff;box-shadow:0 8px 28px #0000000a;transition:box-shadow .2s,border-color .2s;opacity:0;animation:fadeUp .6s ease .25s forwards}.prompt-search:focus-within{border-color:#111;box-shadow:0 0 0 3px #1112,0 10px 30px #0002}.prompt-search svg{width:21px;height:21px;flex:0 0 21px;color:#555}.prompt-search input{flex:1;min-width:0;border:0;outline:0;background:transparent;padding:12px 0;font:inherit;font-size:15px}.prompt-search button{border:0;border-radius:8px;padding:13px 19px;background:#111;color:#fff;font-weight:650;cursor:pointer}.prompt-search button:hover{background:#333}.search-hint{font-size:12px!important;margin:0 0 15px!important}.prompt-chip{border:1px solid var(--line);border-radius:999px;background:#fff;color:#444;padding:7px 11px;font-size:12px;cursor:pointer}.prompt-chip:hover{background:#111;color:#fff}@media(max-width:420px){.prompt-search{flex-wrap:wrap}.prompt-search input{flex:1 1 calc(100% - 40px)}.prompt-search button{width:100%}}
   .hero-ctas{display:flex; gap:12px; opacity:0; animation:fadeUp .6s ease .3s forwards;}
   .btn-primary{background:var(--warm); color:#fff; padding:13px 24px; border-radius:10px; font-weight:600; font-size:15px; display:inline-block;}
   .btn-primary:hover{opacity:.92;}
@@ -77,6 +78,7 @@
       <div class="kicker">Your own AI</div>
       <h1>An AI that's actually yours.</h1>
       <p>ETriod is a private, always-on assistant built around how you work — not a generic chatbot with your logo on it.</p>
+      <form class="prompt-search" action="login.html" method="get"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8" stroke="currentColor" stroke-width="1.8"/><path d="m16 16 4.4 4.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><label for="prompt" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Ask Etriod</label><input id="prompt" name="q" type="search" maxlength="2000" placeholder="Ask a question or tell Etriod what you need" autocomplete="off"><button type="submit">Search</button></form><p class="search-hint">Start with a question. Your prompt opens in your private workspace after sign in.</p><div class="examples"><button class="prompt-chip" type="button">Help me plan my week</button> <button class="prompt-chip" type="button">Explain a difficult idea</button> <button class="prompt-chip" type="button">Draft a thoughtful email</button></div>
       <div class="hero-ctas">
         <a class="btn-primary" href="login.html">Start using ETriod</a>
         <a class="btn-ghost" href="#features">See what it does</a>
@@ -124,5 +126,6 @@
     <span>Your own AI, always on.</span>
   </footer>
 </div>
+<script>document.querySelectorAll('.prompt-chip').forEach(button=>button.addEventListener('click',()=>{const input=document.getElementById('prompt');input.value=button.textContent;input.focus()}));if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});</script>
 </body>
 </html>
